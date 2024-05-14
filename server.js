@@ -5,16 +5,16 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
-const users = []; 
+const registeredUsers = []; 
 
 require('dotenv').config();
 
 const app = express();
-const server = http.createServer(app);
-const io = socketIo(server);
+const httpServer = http.createServer(app); 
+const liveSocket = socketIo(httpServer); 
 
 app.use(session({
-  secret: process.env.SESSION_SECRET,
+  secret: process.env.SESSION_SECRET_KEY, 
   resave: false,
   saveUninitialized: true,
 }));
@@ -23,22 +23,22 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 passport.use(new LocalStrategy(
-  (username, password, done) => {
-    const user = users.find(user => user.username === username);
-    if (!user || user.password !== password) {
-      return done(null, false, { message: 'Incorrect username or password.' });
+  (usernameInput, passwordInput, verifyCallback) => { 
+    const userFound = registeredUsers.find(user => user.username === usernameInput); 
+    if (!userFound || userFound.password !== passwordInput) {
+      return verifyCallback(null, false, { message: 'Incorrect username or password.' });
     }
-    return done(null, user);
+    return verifyCallback(null, userFound);
   }
 ));
 
-passport.serializeUser((user, done) => done(null, user.username));
-passport.deserializeUser((username, done) => {
-  const user = users.find(user => user.username === username);
+passport.serializeUser((user, doneSerialize) => doneSerialize(null, user.username)); 
+passport.deserializeUser((username, doneDeserialize) => { 
+  const user = registeredUsers.find(user => user.username === username);
   if (user) {
-    done(null, user);
+    doneDeserialize(null, user);
   } else {
-    done(new Error('User not found'), null);
+    doneDeserialize(new Error('User not found'), null);
   }
 });
 
@@ -62,15 +62,15 @@ app.get('/dashboard', (req, res) => {
   }
 });
 
-io.on('connection', (socket) => {
+liveSocket.on('connection', (userSocket) => { 
   console.log('A user connected');
 
-  socket.on('disconnect', () => {
+  userSocket.on('disconnect', () => {
     console.log('User disconnected');
   });
 
-  socket.emit('bot-activity', { message: 'Recruitment bot has screened 10 profiles.'});
+  userSocket.emit('bot-activity', { message: 'Recruitment bot has screened 10 profiles.' });
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+const PORT = process.env.APP_PORT || 3000; 
+httpServer.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

@@ -1,6 +1,7 @@
 import os
 import requests
 from dotenv import load_dotenv
+from functools import cache
 
 load_dotenv()
 
@@ -13,6 +14,7 @@ HR_SOFTWARE_BASE_URL = "https://api.examplehrsoftware.com"
 REQUIRED_SKILLS = ["Python", "Django", "APIs"]
 MIN_EXP_YEARS = 2
 
+@cache
 def get_job_applications():
     endpoint = f"{JOB_PORTAL_BASE_URL}/applications"
     headers = {"Authorization": f"Bearer {JOB_PORTAL_API_KEY}"}

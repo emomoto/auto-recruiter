@@ -6,43 +6,46 @@ from functools import cache
 load_dotenv()
 
 JOB_PORTAL_API_KEY = os.getenv("JOB_PORTAL_API_KEY")
-HR_SOFTWARE_API_KEY = os.getenv("HR_SOFTWARE_API_KEY")
+HR_SYSTEM_API_KEY = os.getenv("HR_SYSTEM_API_KEY")
 
-JOB_PORTAL_BASE_URL = "https://api.examplejobportal.com"
-HR_SOFTWARE_BASE_URL = "https://api.examplehrsoftware.com"
+JOB_PORTAL_API_URL = "https://api.examplejobportal.com"
+HR_SYSTEM_API_URL = "https://api.examplehrsoftware.com"
 
-REQUIRED_SKILLS = ["Python", "Django", "APIs"]
-MIN_EXP_YEARS = 2
+REQUIRED_JOB_SKILLS = ["Python", "Django", "APIs"]
+MINIMUM_EXPERIENCE_YEARS = 2
 
 @cache
-def get_job_applications():
-    endpoint = f"{JOB_PORTAL_BASE_URL}/applications"
+def fetch_job_applications():
+    endpoint = f"{JOB_PORTAL_API_URL}/applications"
     headers = {"Authorization": f"Bearer {JOB_PORTAL_API_KEY}"}
     response = requests.get(endpoint, headers=headers)
     return response.json()
 
-def filter_candidates(applications):
-    filtered_candidates = []
+def qualify_candidates(applications):
+    qualified_candidates = []
     for application in applications:
-        skills = application['skills']
-        years_of_experience = application['experience']
+        candidate_skills = application['skills']
+        candidate_experience = application['experience']
         
-        if all(skill in skills for skill in REQUIRED_SKILLS) and years_of_experience >= MIN_EXP_YEARS:
-            filtered_candidates.append(application)
+        has_required_skills = all(skill in candidate_skills for skill in REQUIRED_JOB_SKILLS)
+        meets_experience_requirement = candidate_experience >= MINIMUM_EXPERIENCE_YEARS
+        
+        if has_required_skills and meets_experience_requirement:
+            qualified_candidates.append(application)
             
-    return filtered_candidates
+    return qualified_candidates
 
-def send_emails_to_candidates(candidates):
-    endpoint = f"{HR_SOFTWARE_BASE_URL}/send-email"
-    headers = {"Authorization": f"Bearer {HR_SOFTWARE_API_KEY}"}
+def notify_qualified_candidates(candidates):
+    endpoint = f"{HR_SYSTEM_API_URL}/send-email"
+    headers = {"Authorization": f"Bearer {HR_SYSTEM_API_KEY}"}
     
     for candidate in candidates:
-        payload = {
+        email_details = {
             "email": candidate['email'],
             "subject": "Job Application Status",
             "message": "Congratulations! Your application has progressed to the next stage."
         }
-        response = requests.post(endpoint, json=payload, headers=headers)
+        response = requests.post(endpoint, json=email_details, headers=headers)
         if response.status_code == 200:
             print(f"Email sent successfully to {candidate['email']}")
         else:
@@ -50,16 +53,16 @@ def send_emails_to_candidates(candidates):
 
 def main():
     print("Fetching job applications...")
-    applications = get_job_applications()
+    job_applications = fetch_job_applications()
     
-    print("Filtering candidates based on criteria...")
-    filtered_candidates = filter_candidates(applications)
+    print("Qualifying candidates based on criteria...")
+    qualified_candidates = qualify_candidates(job_applications)
 
-    if filtered_candidates:
-        print("Sending emails to filtered candidates...")
-        send_emails_to_candidates(filtered_candidates)
+    if qualified_candidates:
+        print("Notifying qualified candidates...")
+        notify_qualified_candidates(qualified_candidates)
     else:
-        print("No suitable candidates found.")
+        print("No qualified candidates found.")
 
 if __name__ == "__main__":
     main()

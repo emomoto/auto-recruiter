@@ -7,7 +7,6 @@ load_dotenv()
 
 JOB_PORTAL_API_KEY = os.getenv("JOB_PORTAL_API_KEY")
 HR_SYSTEM_API_KEY = os.getenv("HR_SYSTEM_API_KEY")
-
 JOB_PORTAL_API_URL = "https://api.examplejobportal.com"
 HR_SYSTEM_API_URL = "https://api.examplehrsoftware.com"
 

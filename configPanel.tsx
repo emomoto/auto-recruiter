@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, useEffect } from 'react';
 
 interface BotConfig {
   jobTitles: string[];
@@ -20,6 +20,13 @@ const RecruitmentBotConfig: React.FC<RecruitmentBotConfigProps> = ({ onSave }) =
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [isFormValid, setIsFormValid] = useState<boolean>(true);
+
+  useEffect(() => {
+    const formHasErrors = Object.keys(errors).some((key) => errors[key].length > 0);
+    const configIsIncomplete = !config.jobTitles.length || !config.keywords.length || (!config.autoResponseThreshold && config.autoResponseThreshold !== 0) || (!config.autoRejectionThreshold && config.autoRejectionThreshold !== 0);
+    setIsFormValid(!formHasErrors && !configIsIncomplete);
+  }, [config, errors]);
 
   const validateField = (name: string, value: any) => {
     let error = '';
@@ -43,11 +50,10 @@ const RecruitmentBotConfig: React.FC<RecruitmentBotConfigProps> = ({ onSave }) =
     if (error) {
       setErrors({ ...errors, [name]: error });
     } else {
-      // Remove error message if validation passes
       const newErrors = { ...errors };
       delete newErrors[name];
       setErrors(newErrors);
-      
+
       if (name === 'jobTitles' || name === 'keywords') {
         setConfig((prevConfig) => ({
           ...prevConfig,
@@ -64,7 +70,7 @@ const RecruitmentBotConfig: React.FC<RecruitmentBotConfigProps> = ({ onSave }) =
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    if (Object.keys(errors).length === 0) {
+    if (Object.keys(errors).length === 0 && isFormValid) {
       onSave(config);
     } else {
       alert("Please correct the errors before saving.");
@@ -83,7 +89,7 @@ const RecruitmentBotConfig: React.FC<RecruitmentBotConfigProps> = ({ onSave }) =
           onChange={handleChange}
           placeholder="e.g., Developer, Designer"
         />
-        {errors.jobTitles && <p>{errors.jobTitles}</p>}
+        <p style={{ color: errors.jobTitles ? 'red' : 'green' }}>{errors.jobTitles || 'Valid'}</p>
       </div>
       <div>
         <label htmlFor="keywords">Keywords:</label>
@@ -94,7 +100,7 @@ const RecruitmentBotConfig: React.FC<RecruitmentBotConfigProps> = ({ onSave }) =
           onChange={handleChange}
           placeholder="e.g., JavaScript, UX"
         />
-        {errors.keywords && <p>{errors.keywords}</p>}
+        <p style={{ color: errors.keywords ? 'red' : 'green' }}>{errors.keywords || 'Valid'}</p>
       </div>
       <div>
         <label htmlFor="autoResponseThreshold">Auto-Response Threshold:</label>
@@ -105,7 +111,7 @@ const RecruitmentBotConfig: React.FC<RecruitmentBotConfigProps> = ({ onSave }) =
           value={config.autoResponseThreshold}
           onChange={handleChange}
         />
-        {errors.autoResponseThreshold && <p>{errors.autoResponseThreshold}</p>}
+        <p style={{ color: errors.autoResponseThreshold ? 'red' : 'green' }}>{errors.autoResponseThreshold || 'Valid'}</p>
       </div>
       <div>
         <label htmlFor="autoRejectionThreshold">Auto-Rejection Threshold:</label>
@@ -116,9 +122,9 @@ const RecruitmentBotConfig: React.FC<RecruitmentBotConfigProps> = ({ onSave }) =
           value={config.autoRejectionThreshold}
           onChange={handleChange}
         />
-        {errors.autoRejectionThreshold && <p>{errors.autoRejectionThreshold}</p>}
+        <p style={{ color: errors.autoRejectionThreshold ? 'red' : 'green' }}>{errors.autoRejectionThreshold || 'Valid'}</p>
       </div>
-      <button type="submit">Save Configuration</button>
+      <button type="submit" disabled={!isFormValid}>Save Configuration</button>
     </form>
   );
 };

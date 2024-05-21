@@ -35,20 +35,23 @@ def qualify_candidates(applications):
     return qualified_candidates
 
 def notify_qualified_candidates(candidates):
-    endpoint = f"{HR_SYSTEM_API_URL}/send-email"
+    endpoint = f"{HR_SYSTEM_API_URL}/send-emails-batch"
     headers = {"Authorization": f"Bearer {HR_SYSTEM_API_KEY}"}
     
-    for candidate in candidates:
-        email_details = {
+    email_details_list = [
+        {
             "email": candidate['email'],
             "subject": "Job Application Status",
             "message": "Congratulations! Your application has progressed to the next stage."
-        }
-        response = requests.post(endpoint, json=email_details, headers=headers)
-        if response.status_code == 200:
-            print(f"Email sent successfully to {candidate['email']}")
-        else:
-            print(f"Failed to send email to {candidate['email']}")
+        } for candidate in candidates
+    ]
+    
+    response = requests.post(endpoint, json={"emails": email_details_list}, headers=headers)
+    
+    if response.status_code == 200:
+        print(f"Batch email sent successfully to {len(candidates)} candidates.")
+    else:
+        print("Failed to send batch email to candidates.")
 
 def main():
     print("Fetching job applications...")

@@ -8,41 +8,41 @@ interface RecruitmentBotSettings {
 
 const useRecruitmentBotSettings = () => {
     const [settings, setSettings] = useState<RecruitmentBotSettings | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+    const [fetchError, setFetchError] = useState('');
 
-    const fetchSettings = async () => {
+    const fetchRecruitmentBotSettings = async () => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/recruitment-bot/settings`);
             setSettings(response.data);
-        } catch (err: any) {
-            setError(err.message || "Failed to fetch settings");
+        } catch (error: any) {
+            setFetchError(error.message || "Failed to fetch settings");
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
 
-    const updateSettings = async (newSettings: RecruitmentBotSettings) => {
+    const saveUpdatedSettings = async (updatedSettings: RecruitmentBotSettings) => {
         try {
-            setLoading(true);
-            const response = await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/recruitment-bot/settings`, newSettings);
+            setIsLoading(true);
+            const response = await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/recruitment-bot/settings`, updatedSettings);
             setSettings(response.data);
-        } catch (err: any) {
-            setError(err.message || "Failed to update settings");
+        } catch (error: any) {
+            setFetchError(error.message || "Failed to update settings");
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchSettings();
+        fetchRecruitmentBotSettings();
     }, []);
 
     return {
         settings,
-        loading,
-        error,
-        updateSettings,
+        isLoading,
+        fetchError,
+        updateSettings: saveUpdatedSettings,
     };
 };
 

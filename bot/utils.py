@@ -24,12 +24,13 @@ def parse_resume(resume_path):
 
 def analyze_keywords(text, keywords):
     word_tokens = word_tokenize(text.lower())
-    filtered_sentence = [w for w in word_tokens if not w in stopwords.words('english')]
+    stop_words = stopwords.words('english')
+    filtered_sentence = [w for w in word_tokens if w not in stop_words]
     
     keywords_found = {}
     for keyword in keywords:
-        if keyword.lower() in filtered_sentence:
-            count = filtered_sentence.count(keyword.lower())
+        count = sum(1 for word in filtered_sentence if word == keyword.lower())
+        if count > 0:    
             keywords_found[keyword] = count
     
     return keywords_found

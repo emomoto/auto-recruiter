@@ -1,17 +1,18 @@
 import os
 import re
 from collections import Counter
+import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-import nltk
+from dotenv import load_dotenv
 
 nltk.download('punkt')
 nltk.download('stopwords')
 
-from dotenv import load_dotenv
 load_dotenv()
 
 RESUME_PATH = os.getenv('RESUME_PATH', 'resumes/')
+
 
 def parse_resume(resume_path):
     try:
@@ -22,9 +23,10 @@ def parse_resume(resume_path):
         print(f"Resume file {resume_path} not found.")
         return None
 
+
 def analyze_keywords(text, keywords):
     word_tokens = word_tokenize(text.lower())
-    stop_words = stopwords.words('english')
+    stop_words = set(stopwords.words('english'))
     filtered_sentence = [w for w in word_tokens if w not in stop_words]
     
     keywords_found = {}
@@ -34,6 +36,7 @@ def analyze_keywords(text, keywords):
             keywords_found[keyword] = count
     
     return keywords_found
+
 
 def generate_summary(reports):
     print("Summary Report")
@@ -45,8 +48,12 @@ def generate_summary(reports):
             print(f"{keyword}: {count}")
         print("--------------\n")
 
+
 def main():
-    resumes = [RESUME_PATH + f for f in os.listdir(RESUME_PATH) if os.path.isfile(os.path.join(RESUME_PATH, f))]
+    resumes = [
+        os.path.join(RESUME_PATH, f) for f in os.listdir(RESUME_PATH)
+        if os.path.isfile(os.path.join(RESUME_PATH, f))
+    ]
     
     keywords = ['Python', 'Java', 'SQL', 'JavaScript']
 
@@ -62,6 +69,7 @@ def main():
             })
     
     generate_summary(reports)
+
 
 if __name__ == "__main__":
     main()

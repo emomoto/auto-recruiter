@@ -1,6 +1,6 @@
+import os
 import unittest
 from recruitment_bot import RecruitmentBot
-import os
 
 
 class TestRecruitmentBot(unittest.TestCase):
@@ -33,7 +33,7 @@ class TestRecruitmentBot(unittest.TestCase):
     def test_error_handling_bot_token(self):
         failed_bot = RecruitmentBot(None)
         with self.assertRaises(RuntimeError):
-            failed_bot.some_bot_action()
+            failedxc_bot.some_bot_action()
 
     def test_environment_variables_loading(self):
         self.assertIsNotNone(self.bot_token)
